@@ -1,28 +1,8 @@
-while True:
-    connection, source = s.accept()
-    client = Client(connection, source)
-    #client = Client(connection, source, threading.Thread(target=clientConnection, args=(client,))
-    print(client.source[0] +" connected!")
+import inspect
 
-    clients.append(client)
-    print(clients)
-    t = threading.Thread(target=clientConnection, args=(client,))
-    t.start()
+def foo(hei, hei2):
+    print("Hei:")
 
-def clientConnection(client):
-    while True:
-        print("clientCOnnection")
-        #Client sends a message
-        msg = client.connection.recv(1024).decode()
-        time = datetime.now().strftime("%H:%M")
-        broadcastMsg = time +"   "+ client.name +": "+ msg
-        print(broadcastMsg)
-
-        # broadcast(broadcastMsg)
-
-def recieveMessage():
-    while True:
-        print("hei")
-        msg = c.recv(1024).decode()
-        if msg != "":
-            print(msg)
+argins = len(inspect.getfullargspec(foo).args)
+x = lambda argins: argins if argins == 0 else "Større enn 0"
+print(argins)

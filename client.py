@@ -1,7 +1,6 @@
 import socket
 import sys
 import threading
-from datetime import datetime
 
 address = sys.argv[1]
 port = int(sys.argv[2])
@@ -17,12 +16,13 @@ def sendMessage():
 
 def recieveMessage():
     while True:
-        msg = c.recv(1024).decode()
-        print(msg)
+        msg = c.recv(1024)
+        if msg: # Check if a message has been sent
+            msg = msg.decode()
+            print(msg)
 
-#OBS Må lage en egen thread for å sende og motta melding
-#while True:
-    #Client either recieves or sends a message to the server
+# Client either recieves or sends a message to the server
+# Creating a thread for each action enables them work simultaneously 
 
 # Client sends a message
 sendThread = threading.Thread(target=sendMessage)
