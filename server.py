@@ -2,11 +2,10 @@ import socket
 import sys
 import threading
 from datetime import datetime
-from commands import *
 import inspect
 
-address = sys.argv[1]
-port = int(sys.argv[2])
+address = "localhost"
+port = int(sys.argv[1])
 
 s = socket.socket()
 s.bind((address, port))
@@ -25,48 +24,39 @@ class Client:
 
 # A method for client connections to be sent to a separate thread.
 def clientConnection(client):
-    # Client sends a message
-    while True:
-        msg = client.connection.recv(1024)
-        if msg: # Check if a message has been sent
-            msg = msg.decode()
-            if msg[0] == "/":
-                command(client, msg)
-            else:
+    # Maintaining clients list by checking if client is still connected, if not removing client
+    try:
+        # Client sends a message
+        while True:
+            msg = client.connection.recv(1024)
+            if msg: # Check if a message has been sent
+                msg = msg.decode()
+
                 time = datetime.now().strftime("%H:%M")
                 broadcastMsg = time +"   "+ client.name +": "+ msg
                 print(broadcastMsg)
-                broadcast(broadcastMsg)
+                broadcast("\n"+broadcastMsg, client)
+    except:
+        print("Connection closed with: "+ client.source[0]+", "+client.name)
+        client.connection.close()
+        clients.remove(client)
 
 # Method that sends a message to all clients
-def broadcast(broadcastMsg):
+def broadcast(broadcastMsg, client):
     # Send message to all clients
-    for client in clients:
-        client.connection.send(broadcastMsg.encode())        
-
-# Method that enables clients to run specific commands
-def command(client, msg):
-    # Client runs a command
-    exist = False
-    for command in commands:
-        if msg.split()[0] == command:
-            argins = len(inspect.getfullargspec(command).args)
-            globals()[command[1:]](lambda argins: None if argins == 0 else msg.split()[1])
-            exist = True
-    
-    # Error sent to client if command does not exist
-    if not exist:
-        client.connection.send("Command does not exist, type /help for a list of all commands.".encode())
-
+    for c in clients:
+        if c is not client:
+            c.connection.send(broadcastMsg.encode())
 
 # Establishes a connection and creates a thread for each client
 while True:
     connection, source = s.accept()
-    client = Client(connection, source)
-    print(client.source[0] +" connected!")
+    name = connection.recv(1024).decode()
+    client = Client(connection, source, name = name)
+    print(client.source[0]+", "+ client.name +" connected!")
     clients.append(client)
 
-    # Starting the thread
+    # Starting thread
     t = threading.Thread(target=clientConnection, args=(client,))
     client.thread = t
     client.thread.start()
