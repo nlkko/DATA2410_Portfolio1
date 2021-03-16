@@ -33,9 +33,9 @@ def clientConnection(client):
                 msg = msg.decode()
 
                 time = datetime.now().strftime("%H:%M")
-                broadcastMsg = time +"   "+ client.name +": "+ msg
+                broadcastMsg = time +"   "+ client.name +" ~ "+ msg
                 print(broadcastMsg)
-                broadcast("\n"+broadcastMsg, client)
+                broadcast(broadcastMsg, client)
     except:
         print("Connection closed with: "+ client.source[0]+", "+client.name)
         client.connection.close()
@@ -48,6 +48,36 @@ def broadcast(broadcastMsg, client):
         if c is not client:
             c.connection.send(broadcastMsg.encode())
 
+def commands():
+    try:
+        while True:
+            time = datetime.now().strftime("%H:%M")
+            command = input("Write a message: ")
+            print(time+"  Server: "+ command)
+            
+            #If the server wants to shut down, type /shutdown
+            if command == "/shutdown":
+                print("Shutting down the server...")
+                for client in clients:
+                    client.connection.close()
+                s.close()
+                break
+            elif command == "/list":
+                print("==== List of clients ====")
+                for client in clients:
+                    print(client.source[0]+", "+ client.name)
+                print("=========================")
+            else:
+                print("Unknown command")
+
+            
+    except:
+        print("Something went wrong")
+
+cT = threading.Thread(target=commands)
+cT.start()
+
+print("======== BadBots Chat server ========")
 # Establishes a connection and creates a thread for each client
 while True:
     connection, source = s.accept()
